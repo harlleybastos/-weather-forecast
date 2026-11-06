@@ -1,0 +1,34 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    # Pure cache: no persistence, bounded memory, evict least-recently-used
+    # keys when full (every key also carries its own TTL).
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    ports:
+      - "${PORT:-3000}:80"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      # Only used to sign cookies; override in any shared environment.
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-local-compose-only-not-a-secret-0123456789abcdef0123456789abcdef}
+      # Served over plain HTTP locally; keep the defaults (true) behind a TLS proxy.
+      FORCE_SSL: "false"
+      ASSUME_SSL: "false"
+      RAILS_MAX_THREADS: 5
+      WEB_CONCURRENCY: 2
+      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-weather-forecast-challenge/1.0}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/up"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
