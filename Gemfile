@@ -6,7 +6,7 @@ gem "puma", ">= 5.0"
 
 gem "faraday", "~> 2.12"
 gem "faraday-retry", "~> 2.2"
-gem "redis", "~> 5.3"
+gem "redis", "~> 6.0"
 gem "rack-attack", "~> 6.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
