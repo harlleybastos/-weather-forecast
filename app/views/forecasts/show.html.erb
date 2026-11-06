@@ -1,0 +1,27 @@
+<% content_for :title, @result ? "Forecast for #{@result.location.postal_code}" : "Weather Forecast" %>
+
+<header class="page-header">
+  <h1>Weather Forecast</h1>
+  <p class="muted">Enter a US street address or ZIP code. Forecasts are cached per ZIP code for 30 minutes.</p>
+</header>
+
+<%= form_with url: root_path, method: :get, class: "search" do |f| %>
+  <%= f.label :address, "Address", class: "visually-hidden" %>
+  <%= f.search_field :address, value: @query.address, placeholder: "e.g. 1 Infinite Loop, Cupertino, CA",
+        maxlength: AddressQuery::MAX_LENGTH, autofocus: true, required: true %>
+  <%= f.submit "Get forecast", name: nil %>
+<% end %>
+
+<% if @query.errors.any? %>
+  <div class="alert" role="alert">
+    <% @query.errors.full_messages.each do |message| %>
+      <p><%= message %></p>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @error %>
+  <div class="alert" role="alert"><p><%= @error %></p></div>
+<% end %>
+
+<%= render "forecast", result: @result if @result %>

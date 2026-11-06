@@ -1,0 +1,60 @@
+<% forecast = result.forecast %>
+<% today = forecast.today %>
+
+<section class="card" aria-labelledby="current-heading">
+  <div class="card__header">
+    <div>
+      <h2 id="current-heading">ZIP <%= result.location.postal_code %></h2>
+      <p class="muted small"><%= result.location.display_name %></p>
+    </div>
+    <%= cache_badge(result) %>
+  </div>
+
+  <div class="current">
+    <p class="current__temp" data-testid="current-temperature"><%= format_temperature(forecast.temperature, forecast.temperature_unit) %></p>
+    <div>
+      <p class="current__condition"><%= forecast.condition %></p>
+      <% if today %>
+        <p>
+          H: <span data-testid="today-high"><%= format_temperature(today.high, forecast.temperature_unit) %></span>
+          · L: <span data-testid="today-low"><%= format_temperature(today.low, forecast.temperature_unit) %></span>
+        </p>
+      <% end %>
+      <p class="muted small">
+        Feels like <%= format_temperature(forecast.feels_like, forecast.temperature_unit) %>
+        <% if forecast.humidity %> · Humidity <%= forecast.humidity.round %>%<% end %>
+        <% if forecast.wind_speed %> · Wind <%= forecast.wind_speed.round %> <%= forecast.wind_speed_unit %><% end %>
+      </p>
+    </div>
+  </div>
+
+  <p class="muted small" data-testid="cache-status">
+    <% if result.cached? %>
+      Served from cache · fetched <%= time_ago_in_words(result.fetched_at) %> ago
+    <% else %>
+      Fetched live from the weather service
+    <% end %>
+  </p>
+</section>
+
+<% if forecast.days.any? %>
+  <section class="card" aria-labelledby="extended-heading">
+    <h2 id="extended-heading">Extended forecast</h2>
+    <table class="daily">
+      <thead>
+        <tr><th scope="col">Day</th><th scope="col">Conditions</th><th scope="col">High</th><th scope="col">Low</th><th scope="col">Precip.</th></tr>
+      </thead>
+      <tbody>
+        <% forecast.days.each do |day| %>
+          <tr>
+            <th scope="row"><%= day.date == today&.date ? "Today" : l(day.date, format: "%a %b %-d") %></th>
+            <td><%= day.condition %></td>
+            <td><%= format_temperature(day.high, forecast.temperature_unit) %></td>
+            <td><%= format_temperature(day.low, forecast.temperature_unit) %></td>
+            <td><%= day.precipitation_probability ? "#{day.precipitation_probability}%" : "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
